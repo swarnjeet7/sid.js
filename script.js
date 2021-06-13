@@ -4,4 +4,4 @@
 // console.log(sid(document.querySelector("h2")));
 // console.log(sid("ul"));
 
-console.log(sid("<li>"));
+console.log(sid("#box"));
