@@ -4,7 +4,8 @@
     arr = Array.prototype,
     push = arr.push,
     splice = arr.splice,
-    htmlReg = new RegExp(/^<.*>$/g);
+    htmlReg = new RegExp(/^<.*>$/g),
+    idReg = new RegExp(/^#\w+$/g);
 
   var sid = function (selector, context) {
     return new Sid(selector, context);
@@ -24,16 +25,21 @@
           ? doc
           : context
         : doc;
+
       elms = htmlReg.test(selector)
         ? parseHtml(selector, ctx)
+        : idReg.test(selector)
+        ? ctx.getElementById(selector.match(idReg)[0].slice(1))
         : ctx.querySelectorAll(selector);
     }
 
-    if (elms.nodeType === 1 || elms === win || elms === doc) elms = [elms];
-    this.length = elms.length;
+    if (elms) {
+      if (elms.nodeType === 1 || elms === win || elms === doc) elms = [elms];
+      this.length = elms.length;
 
-    for (var i = 0, l = elms.length; i < l; i++) {
-      this[i] = elms[i];
+      for (var i = 0, l = elms.length; i < l; i++) {
+        this[i] = elms[i];
+      }
     }
     // return this;
   }
@@ -135,12 +141,36 @@
     return this;
   };
 
-  /*
-    its always takes a element or instance of sid 
-  */
+  fn.insertAfter = function (x) {
+    if (!x) return this;
+    var els = x;
+    //take srting and single element with id , collection
+    // if string
+    if (isString(x)) {
+      if (htmlReg.test(x)) return this;
+      els = idReg.test(x)
+        ? document.getElementById(x)
+        : document.querySelectorAll(x);
+
+      for (var i = 0, l = els.length; i < l; i++) {
+        var referenceNode = els[i];
+        this.each(function (j, el) {
+          var newNode = i === l - 1 ? el : el.cloneNode(true);
+          referenceNode.parentNode.insertBefore(
+            newNode,
+            referenceNode.nextSibling
+          );
+        });
+      }
+    }
+    return this;
+  };
+
   fn.append = function (x) {
     if (!x) return this;
     var len = this.length;
+    // if x is string
+    x = isString(x) ? parseHtml(x) : x;
 
     // if x is element or collection or sid object
     this.each(function (k, item) {
