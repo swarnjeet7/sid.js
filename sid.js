@@ -142,26 +142,28 @@
   };
 
   fn.insertAfter = function (x) {
-    if (!x) return this;
-    var els = x;
-    //take srting and single element with id , collection
+    if (!x || x.nodeType === 9 || x === win) return this;
+    var els = x.length ? x : [x];
+    // if instance of sid
+    if (isSid(x)) {
+      els = sid.each;
+    }
     // if string
     if (isString(x)) {
       if (htmlReg.test(x)) return this;
       els = idReg.test(x)
         ? document.getElementById(x)
         : document.querySelectorAll(x);
-
-      for (var i = 0, l = els.length; i < l; i++) {
-        var referenceNode = els[i];
-        this.each(function (j, el) {
-          var newNode = i === l - 1 ? el : el.cloneNode(true);
-          referenceNode.parentNode.insertBefore(
-            newNode,
-            referenceNode.nextSibling
-          );
-        });
-      }
+    }
+    for (var i = 0, l = els.length; i < l; i++) {
+      var referenceNode = els[i];
+      this.each(function (j, el) {
+        var newNode = i === l - 1 ? el : el.cloneNode(true);
+        referenceNode.parentNode.insertBefore(
+          newNode,
+          referenceNode.nextSibling
+        );
+      });
     }
     return this;
   };
@@ -176,7 +178,6 @@
     this.each(function (k, item) {
       var arr = x.length ? x : [x];
       for (var i = 0, l = arr.length; i < l; i++) {
-        debugger;
         var el = len - 1 === k ? arr[i] : arr[i].cloneNode(true);
         item.appendChild(el);
       }
